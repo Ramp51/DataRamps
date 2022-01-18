@@ -11,6 +11,10 @@ namespace DataRamp
         IDbCommand GetStoredProcCommand(string storedProcedureName);
         IDataReader ExecuteReader(IDbCommand dbCommand);
         IDataReader ExecuteReader(IDbCommand dbCommand, IDbTransaction transaction);
+        IEnumerable<TReturnType> ExecuteResult<TReturnType>(IDbCommand dbCommand,
+            IParameterMapper[] parameterMappers, IResultSetMapper<TReturnType> resultSetMapper,
+            params object[] parameterValues);
+
         int ExecuteNonQuery(IDbCommand dbCommand);
         int ExecuteNonQuery(IDbCommand dbCommand, IDbTransaction transaction);
 

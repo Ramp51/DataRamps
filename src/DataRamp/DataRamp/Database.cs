@@ -51,6 +51,35 @@ namespace DataRamp
             return dbCommand.ExecuteReader();
         }
 
+        public IEnumerable<TReturnType> ExecuteResult<TReturnType>(IDbCommand dbCommand,
+            IParameterMapper[] parameterMappers, IResultSetMapper<TReturnType> resultSetMapper,
+            params object[] parameterValues)
+        {
+            for(int idxParameterMapper = 0; idxParameterMapper < parameterMappers.Length; idxParameterMapper++)
+            {
+                //todo: enhance this to ask the parametter mapper how many parameters it expects
+                //      then consume that number of parameters from the parameterValues array
+                parameterMappers[idxParameterMapper].AssignParameters(dbCommand, parameterValues[idxParameterMapper]);
+            }
+
+            IEnumerable<TReturnType> results;
+
+            connection.Open();
+            try
+            {
+                using (IDataReader reader = dbCommand.ExecuteReader())
+                {
+                    results = resultSetMapper.MapSet(reader);
+                }
+            }
+            finally
+            {
+                connection.Close();
+            }
+
+            return results;
+        }
+
         /// <summary>
         /// Executes the command within a transaction and returns an IDataReader through which the result can be read. It is the responsibility of the caller to close the connection and reader when finished.
         /// </summary>
