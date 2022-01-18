@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Text;
 using Xunit;
 
@@ -17,6 +18,8 @@ namespace DataRamps.Tests.SimpleCrudTests
         {
             ServiceRegistry registry = new ServiceRegistry();
             ServiceProvider services = registry.GetScopedServiceProvider();
+            
+            DbProviderFactories.RegisterFactory("System.Data.SqlClient", Microsoft.Data.SqlClient.SqlClientFactory.Instance);
 
             DatabaseProviderFactory factory = services.GetRequiredService<DatabaseProviderFactory>();
 

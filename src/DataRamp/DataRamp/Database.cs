@@ -19,12 +19,12 @@ namespace DataRamp
             this.factory = factory ?? throw new ArgumentNullException(nameof(factory));
         }
 
-        public async Task<IEnumerable<TReturnType>> ExecuteCommandAsync<TReturnType>(IDbCommand cmd, IResultSetMapper<TReturnType> resultSetMapper)
+        public async Task<IEnumerable<TReturnType>> ExecuteCommandAsync<TReturnType>(IDbCommand cmd, IResultSetMapper<TReturnType> resultSetMapper, IParameterMapper parameterMapper, params Object[] parameters)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<IEnumerable<TReturnType>> ExecuteCommandAsync<TReturnType>(IDbCommand cmd, IRowMapper<TReturnType> rowMapper)
+        public async Task<IEnumerable<TReturnType>> ExecuteCommandAsync<TReturnType>(IDbCommand cmd, IRowMapper<TReturnType> rowMapper, IParameterMapper parameterMapper, params Object[] parameters)
         {
             throw new NotImplementedException();
         }
@@ -38,5 +38,69 @@ namespace DataRamp
 
             return command;
         }
+
+        /// <summary>
+        /// Executes the command and returns an IDataReader through which the result can be read. It is the responsibility of the caller to close the connection and reader when finished.
+        /// </summary>
+        /// <param name="dbCommand"></param>
+        /// <returns></returns>
+        public IDataReader ExecuteReader(IDbCommand dbCommand)
+        {
+            connection.Open();
+
+            return dbCommand.ExecuteReader();
+        }
+
+        /// <summary>
+        /// Executes the command within a transaction and returns an IDataReader through which the result can be read. It is the responsibility of the caller to close the connection and reader when finished.
+        /// </summary>
+        /// <param name="dbCommand"></param>
+        /// <param name="transaction"></param>
+        /// <returns></returns>
+        public IDataReader ExecuteReader(IDbCommand dbCommand, IDbTransaction transaction)
+        {
+            dbCommand.Transaction = transaction;
+
+            return ExecuteReader(dbCommand);
+        }
+
+        /// <summary>
+        /// Executes the command and returns the number of rows affected.
+        /// </summary>
+        /// <param name="dbCommand"></param>
+        /// <returns></returns>
+        public int ExecuteNonQuery(IDbCommand dbCommand)
+        {
+            connection.Open();
+
+            return dbCommand.ExecuteNonQuery();
+        }
+
+        /// <summary>
+        /// Executes the command within the given transaction, and returns the number of rows affected.
+        /// </summary>
+        /// <param name="dbCommand"></param>
+        /// <returns></returns>
+        public int ExecuteNonQuery(IDbCommand dbCommand, IDbTransaction transaction)
+        {
+            dbCommand.Transaction = transaction;
+
+            return ExecuteNonQuery(dbCommand);
+        }
+
+        public void AddInParameter(IDbCommand dbCommand, string parameterName, DbType parameterType, object value)
+        {
+            IDbDataParameter param = dbCommand.CreateParameter();
+            param.ParameterName = parameterName;
+            param.DbType = parameterType;
+            param.Value = value;
+            param.Direction = ParameterDirection.Input;
+
+            dbCommand.Parameters.Add(param);
+
+        }
+
+
+        //todo: design methods based on this https://docs.microsoft.com/en-us/previous-versions/msp-n-p/bb744807(v=pandp.31)?redirectedfrom=MSDN
     }
 }

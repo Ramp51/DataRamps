@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿    using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -18,11 +18,11 @@ namespace DataRamp
         {
             this.config = config ?? throw new ArgumentNullException(nameof(config));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
-            if (!DbProviderFactories.TryGetFactory(StandardDefaultConnectionProviderType, out DbProviderFactory factory))
-            {
-                DbProviderFactories.RegisterFactory(StandardDefaultConnectionProviderType, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
-            }
+            
+            //if (!DbProviderFactories.TryGetFactory(StandardDefaultConnectionProviderType, out DbProviderFactory factory))
+            //{
+            //    DbProviderFactories.RegisterFactory(StandardDefaultConnectionProviderType, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
+            //}
         }
 
         public IDatabase CreateDefault()
@@ -38,11 +38,20 @@ namespace DataRamp
                 defaultConnectionProviderType = StandardDefaultConnectionProviderType;
             }
 
-            DbProviderFactory factory = DbProviderFactories.GetFactory(defaultConnectionProviderType);
+            return Create(new ConnectionStringInfo()
+            {
+                 ConnectionString = defaultConnectionString,
+                 ProviderType = defaultConnectionProviderType
+            });
+        }
+
+        public IDatabase Create(ConnectionStringInfo connectionDetails)
+        {
+            DbProviderFactory factory = DbProviderFactories.GetFactory(connectionDetails.ProviderType);
 
             IDbConnection connection = factory.CreateConnection();
-            connection.ConnectionString = defaultConnectionString;
-            
+            connection.ConnectionString = connectionDetails.ConnectionString;
+
             return new Database(connection, factory);
         }
     }
